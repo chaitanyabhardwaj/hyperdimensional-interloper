@@ -1,9 +1,10 @@
 package org.example;
 
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) {
-        
+        Crawler crawler = new Crawler();
+        crawler.setSeed("https://en.wikipedia.org/wiki/Main_Page");
+        crawler.setLimit(20,2, 200);//Breadth and Depth
+        crawler.crawl();
     }
 }

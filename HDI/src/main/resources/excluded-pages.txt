@@ -1,0 +1,10 @@
+png
+jpg
+jpeg
+gid
+wav
+js
+JSON
+json
+php
+css

@@ -1,10 +1,7 @@
 package org.example;
 
 import java.io.*;
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 public class Crawler {
@@ -17,6 +14,8 @@ public class Crawler {
     public int BREADTH;
     public int DEPTH;
     public int LINK_COUNT;
+
+    private CrawlerResultListener listener;
     public Crawler() {
         loadResource("excluded-pages.txt",ExcludedPage);
         loadResource("excluded-urls.txt",ExcludedURL);
@@ -87,6 +86,7 @@ public class Crawler {
                     reader.close();
                     connection.disconnect();
                     line = response.toString();
+                    listener.onResultUpdate(line);
                     int startIndex = 0;
                     while (breadth>0) {
                         /*startIndex = beginIndex(line,startIndex);
@@ -101,12 +101,12 @@ public class Crawler {
                         }
                         String index [] = URL.split(",");
                         String link = line.substring(Integer.valueOf(index[0]), Integer.valueOf(index[1]));
-                        System.out.println(link);
-                        if(!link.equals("") && (link.charAt(0)!='/' && link.charAt(0)!='#') && link.charAt(0)=='h'){
+                        if(verifyURL(link)){
                             String domain;
-                            int s = link.indexOf("//"),e = link.indexOf("/",s+2);
-                            if(e==-1) domain = link.substring(s+2);
-                            else domain = link.substring(s+2,link.indexOf("/",s+2));
+                            int s = link.indexOf("."),e = link.indexOf("/",s+1);
+                            if(e==-1) domain = link.substring(s+1);
+                            else domain = link.substring(s+1,e);
+                            link.replaceAll("\\\\","");
                             if(!linkSet.contains(link) && !ExcludedURL.contains(domain)){
                                 ExcludedURL.add(domain);
                                 int li = link.lastIndexOf(".");
@@ -126,7 +126,7 @@ public class Crawler {
                 }
                 System.out.println("Group["+depth+groupName+"][" + linkCount + "]["+inputUrl+"]");
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 System.out.println("Group["+depth+groupName+"][error]["+inputUrl+"]");
             }
         }
@@ -143,6 +143,10 @@ public class Crawler {
         int q2 = line.indexOf("\"",q1+1);
         return (q1+1)+","+q2;
     }
+
+    public static boolean verifyURL(String link){
+        return !link.equals("") && (link.charAt(0)!='/' && link.charAt(0)!='#') && (link.startsWith("http") || link.startsWith("https"));
+    }
     public static int beginIndex(String line,int startIndex){
         int http = line.indexOf("http://", startIndex);
         int https = line.indexOf("https://", startIndex);
@@ -154,13 +158,17 @@ public class Crawler {
         } return Math.min(http,https);
     }
 
-    public static int lastIndex(String line,int startIndex){
-        int co = Math.min(line.indexOf(" ",startIndex),line.indexOf("<",startIndex));
-        co = Math.min(co,line.indexOf("*",startIndex));
-        co = Math.min(co,line.indexOf(";",startIndex));
-        co = Math.min(co,line.indexOf("'",startIndex));
-        co = Math.min(co,line.indexOf("\\",startIndex));
-        return Math.min(line.indexOf("\"",startIndex),co);
+    public static int lastIndex(String line,int startIndex) {
+        int co = Math.min(line.indexOf(" ", startIndex), line.indexOf("<", startIndex));
+        co = Math.min(co, line.indexOf("*", startIndex));
+        co = Math.min(co, line.indexOf(";", startIndex));
+        co = Math.min(co, line.indexOf("'", startIndex));
+        co = Math.min(co, line.indexOf("\\", startIndex));
+        return Math.min(line.indexOf("\"", startIndex), co);
+    }
+
+    public void setResultCallBackListener(CrawlerResultListener resultListener){
+        this.listener = resultListener;
     }
 }
 

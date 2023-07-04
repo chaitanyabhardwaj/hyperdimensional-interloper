@@ -1,6 +1,9 @@
-www.google.com
-developer.wordpress.org
-modernizr.com
-www.w3.org
+linkedin.com
+twitter.com
+facebook.com
+youtube.com
+github.com
 wordpress.org
+modernizr.com
+w3.org
 scoutlife.org
